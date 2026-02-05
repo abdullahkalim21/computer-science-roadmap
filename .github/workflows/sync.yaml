@@ -1,0 +1,35 @@
+name: Sync Fork with Upstream
+
+on:
+  schedule:
+    # Runs at 00:00 UTC every day
+    - cron: '0 2 * * 1'
+  # Allows you to run this manually from the Actions tab for testing
+  workflow_dispatch:
+
+jobs:
+  sync:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout target repo
+        uses: actions/checkout@v4
+        with:
+          # We need full history to merge
+          fetch-depth: 0
+          token: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Configure Git
+        run: |
+          git config --global user.name 'github-actions[bot]'
+          git config --global user.email 'github-actions[bot]@users.noreply.github.com'
+
+      - name: Sync with Upstream
+        run: |
+          git remote add upstream https://github.com/ossu/computer-science.git
+          
+          git fetch upstream
+
+          git checkout master
+          git merge upstream/master
+
+          git push origin main
